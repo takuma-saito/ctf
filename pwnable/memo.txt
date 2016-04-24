@@ -1,0 +1,73 @@
+http://captf.com/practice-ctf/
+
+##  pwnable
+URL: http://pwnable.kr/
+
+bof はあとでやる
+
+- fd => コード読むだけ
+- collision => hash 値の collision を探す
+- coin1 => 2分探索で探す
+	→ file discriptor <=> socat で繋ぐ
+- uaf => ? private 内の関数を実行する
+- input => 引数を求められた形にうまく変更する
+	- /dev/shm でコンパイルできる
+	- stage1: ./input $(seq 1 64) '' "$(echo -ne " \n\r")" $(seq 67 99)
+	- stage2:
+		- (exec 2>-; echo "\x00\x0a\x00\xff" > stderr;  exec 2<stderr)
+		- echo "\x00\x0a\x00\xff" | ./a.out
+	- stage3:
+		- /dev/shm で env を修正して zsh をexecve
+	- stage4:
+		- echo "\x00\x00\x00\x00" > $'\n'
+	- stage5:
+		- ./a.out $(seq 1 66) '9999'
+		- echo "\xde\xad\xbe\xef" | nc localhost 9999
+- cmd1:
+	- flag: symbolic link で rename する
+- passcode:
+	- scanf での passcode1, passcode2 がそれぞれポインタではなく値になっている
+	- 方針: name に 338150, 13371337 をそれぞれ入れてそこに飛べばよい
+- leg:
+	- arm プロセッサのアセンブリを読む
+- collision:
+	- リトルエンディアンなので注意すること
+	- \x11\x11\x11\x11
+	- \x01\x11\x11\x11 
+	- \x01\x11\x11\x11
+	- \x01\x11\x11\x11
+	- \x0D\x98\xC5\xA8
+	- daddy! I just managed to create a hash collision :)
+
+
+## メモ
+関数呼び出しは
+ローカル変数 -> ベースポインタ -> 復帰アドレス -> 引数 -> … の順?
+シェルコードhttp://blog.thireus.com/execvebinsh-binsh-null-macos-mach-o-x86-64
+
+- gdb の基本的な使い方を思い出す
+	- 基本的なコマンド
+		- s: step
+		- si: step intruction
+		- n: next
+		- ni: next intrcution
+		- c: continue
+		- b: breakpoint
+		- disas main: disassemble main function
+		- i r rax: info register rax
+		- i frame: info frame   # stack の情報
+	- アセンブリ読み方
+		- 0xXXXX(%a, %b, %c): *(a + b + c + 0xXXXX)
+		- mov (%a), %b:   b = *a
+		- 文字列 print: printf "%s", (char *) 0xXXXXX
+	- 基本的な使い方
+		- :b main, n, n, 
+
+do: http://pwnable.kr/play.php
+
+- 環境構築
+	- arm エミュレーター
+	- gdb の使い方を再度勉強する
+
+ELB 使うとどうしてもエンドポイントが URL になって、elastic beanstalk は裏で勝手に連携して
+
